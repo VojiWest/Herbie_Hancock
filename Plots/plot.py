@@ -17,3 +17,4 @@ def plot_data(data, title, xlabel, ylabel):
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.show()
+    
