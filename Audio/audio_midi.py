@@ -60,3 +60,10 @@ def midi_to_wav(name):
     # Convert the MIDI file to a WAV file using FluidSynth
     fs = FluidSynth("Soundfonts/Roland_SC-88.sf2")
     fs.midi_to_audio("Data Audio Outputs/"+name+".mid", "Data Audio Outputs/"+name+".wav")
+
+def data_to_audio(data, audio_name):
+    cellos_midi = get_midi(data, instrument_num=42)
+    write_midi(cellos_midi, name = audio_name)
+    midi_to_wav(name = audio_name)
+
+    return data
