@@ -13,14 +13,16 @@ def get_params(data):
     return symbolicLength, baseFreq, sampleRate, durationPerSymbol, ticksPerSymbol
 
 
-def get_midi(data, instrument_num=42):
+def get_midi(data, instrument_num=42, durationPerSymbol=1 / 16):
     # Save the sound to a MIDI file using pretty_midi
     cello = pm.Instrument(program=instrument_num)  # Program 42 is a cello in General MIDI
 
-    symbolicLength, baseFreq, sampleRate, durationPerSymbol, ticksPerSymbol = get_params(data)
+    symbolicLength, baseFreq, sampleRate, _, ticksPerSymbol = get_params(data)
+
+    num_voices = data.shape[1]
 
     cellos = []
-    for voice_num in range(4):
+    for voice_num in range(num_voices):
         n = 0
         start = n * durationPerSymbol
         end = (n + 1) * durationPerSymbol
@@ -61,8 +63,8 @@ def midi_to_wav(name):
     fs = FluidSynth("Soundfonts/Roland_SC-88.sf2")
     fs.midi_to_audio("Data Audio Outputs/"+name+".mid", "Data Audio Outputs/"+name+".wav")
 
-def data_to_audio(data, audio_name):
-    cellos_midi = get_midi(data, instrument_num=42)
+def data_to_audio(data, audio_name, instrument = 42, durationPerSymbol=1 / 16):
+    cellos_midi = get_midi(data, instrument_num=instrument, durationPerSymbol=durationPerSymbol)
     write_midi(cellos_midi, name = audio_name)
     midi_to_wav(name = audio_name)
 
