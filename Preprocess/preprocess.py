@@ -3,7 +3,6 @@ import numpy as np
 from sklearn.utils import class_weight
 
 def load_data(path):
-    path = "F.txt"
 
     # Load the data
     data = pd.read_csv(path, sep="\t", header=None)
@@ -46,7 +45,7 @@ def convert_voices_onehot(data, voice_ranges):
 
     y_one_hot = np.array(one_hot_data)
     y_one_hot = y_one_hot.reshape(y_one_hot.shape[1], y_one_hot.shape[0], y_one_hot.shape[2])
-
+    
     return y_one_hot
 
 def get_class_weights(labels, num_classes=31):
