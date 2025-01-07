@@ -1,5 +1,6 @@
 from Audio import audio_midi
 from Preprocess import preprocess
+from Preprocess import augmentation
 from Model import keras_model, pytorch_model
 from Plots import plot
 from Utils import utils
@@ -67,6 +68,7 @@ def train_and_run_pytorch_model(mode, train_X, y_one_hot, voice_ranges, class_we
 
 def main(mode):
     data = preprocess.load_data(path = "F.txt") # Load the data
+    data = data[0] # we choose only voice 1 
 
     ### Plotting the  
     # plot.plot_data(data, title = "Original Data", xlabel = "Time", ylabel = "Note")
@@ -80,12 +82,24 @@ def main(mode):
     train_X, train_Y = preprocess.create_input_windows(train, seq_length = 50)
 
     voice_ranges = [(50, 80), (40, 70), (35, 65), (25, 55)]
-    y_one_hot = preprocess.convert_voices_onehot(train_Y, voice_ranges)
+    voice_range_voice1 = (50, 80)
+    y_one_hot = preprocess.one_voice_convert_onehot(train_Y, voice_range_voice1)
+
+
+
+    circle_of_fifths_representation = augmentation.convert_voices_circle_of_fifths(train)
+    print(circle_of_fifths_representation[353])
+
+
+
+    augmentation.plot_circle_of_fifths(circle_of_fifths_representation[353])
+
 
     # plot the one hot data
     # plot.plot_one_hot_labels(y_one_hot, title = "One Hot Labels", xlabel = "Time", ylabel = "Note")
 
     class_weights = preprocess.get_class_weights(y_one_hot)
+
 
     # plot.plot_class_weights(utils.weights_to_tensor(class_weights))
 
