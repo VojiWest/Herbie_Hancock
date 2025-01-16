@@ -81,3 +81,12 @@ def get_class_weights(labels, num_classes=31):
         all_class_weights.append(full_class_weights)
     
     return all_class_weights
+
+def get_first_voice(data_X, data_y):
+    # Get the first voice from the data
+    print("Data X Shape: ", data_X.shape, "Data Y Shape: ", data_y.shape)
+    data_X_first_voice = data_X[:, :, 0]
+    data_y_first_voice = data_y[:, 0, :]
+    print("Data X First Voice Shape: ", data_X_first_voice.shape, "Data Y First Voice Shape: ", data_y_first_voice.shape)
+    
+    return data_X_first_voice, data_y_first_voice

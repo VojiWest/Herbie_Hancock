@@ -10,8 +10,11 @@ def add_preds_to_data(data, predictions):
     predictions_reshaped = predictions
 
     # Create a DataFrame with the same column names as `train`
+    print("Data", data.shape)
     new_predictions = pd.DataFrame(predictions_reshaped, columns=data.columns)
+    print("New Predictions", new_predictions.shape)
     new_data = pd.concat([data, new_predictions], ignore_index=True)
+    print("New Data", new_data.shape)
 
     return new_data, new_predictions
 
