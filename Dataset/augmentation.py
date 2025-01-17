@@ -66,9 +66,12 @@ def augmented_encoding(data):
         if note == 0: 
             chroma_x, chroma_y = 0, 0
             fifths_x, fifths_y = 0, 0
+            scaled_note
         else:
             chroma_x, chroma_y = calculate_chromatic_circle(note)
             fifths_x, fifths_y = calculate_circle_of_fifths(note)
+
+        
         
         encoded_data.append([note, chroma_x, chroma_y, fifths_x, fifths_y])
 
