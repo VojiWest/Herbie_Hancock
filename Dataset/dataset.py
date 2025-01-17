@@ -12,8 +12,9 @@ class CustomDataset(Dataset):
         self.data = pd.read_csv(data_path, sep='\t', header=None)
         self.data = self.data[voice_num]
         self.train, self.test = self.split_temporal_data(self.data, test_split)
-        self.train_aug = augmented_encoding(self.train)
-        self.test_aug = augmented_encoding(self.test)
+        self.non_zero_min, self.max = self.get_non_zero_min_and_max()
+        self.train_aug = augmented_encoding(self.train, self.non_zero_min, self.max)
+        self.test_aug = augmented_encoding(self.test, self.non_zero_min, self.max)
         self.X_train, self.y_train = self.create_sliding_window_dataset(self.train, self.train_aug, window_size)
         self.X_test, self.y_test = self.create_sliding_window_dataset(self.test, self.test_aug, window_size)
         self.y_train = self.encode_labels(self.y_train)
@@ -40,6 +41,7 @@ class CustomDataset(Dataset):
       # one-hot encodes labels
       # restricts the possible note values to the notes that have already occured (no notes outside this range)
       uniques = np.unique(self.train)
+      print("Uniques: ", uniques)
       num_unique = len(uniques)
       encoded_labels = np.zeros((len(labels), num_unique))
       for i, label in enumerate(labels):
@@ -67,6 +69,13 @@ class CustomDataset(Dataset):
     def get_output_to_input_matching(self):
       uniques = np.unique(self.train)
       return uniques
+    
+    def get_non_zero_min_and_max(self):
+      non_zero_vals = [i for i in self.train if i != 0]
+      min_non_zero_note = min(non_zero_vals)
+      max_note = max(non_zero_vals)
+
+      return min_non_zero_note, max_note
 
     def get_unique_target_values(self):
       num_unique = len(np.unique(self.train))
