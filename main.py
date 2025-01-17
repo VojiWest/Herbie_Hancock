@@ -1,100 +1,60 @@
 from Audio import audio_midi
 from Preprocess import preprocess
-from Preprocess import augmentation
 from Model import keras_model, pytorch_model, logistic_reg
+from Model_LR import ff_model, lr_model, trainer, evaluator, predictor
 from Plots import plot
 from Utils import utils
+from Dataset import dataset
+from Loss import custom_CE
+
+
 
 import numpy as np
 import sys
 import torch
 
-def train_and_run_pytorch_model(mode, train_X, y_one_hot, voice_ranges, class_weights, seq_length = 16):
-    if mode == "train":
-        # Convert things to tensors since PyTorch works with tensors
-        class_weights = utils.weights_to_tensor(class_weights)
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') # Use GPU if available
-        train_X = torch.tensor(train_X, dtype=torch.float32).to(device)
-        y_one_hot = torch.tensor(y_one_hot, dtype=torch.float32).to(device)
-
-        # Create model, optimizer and loss function. Give the model the input shape and class weights
-        model, optimizer, loss_fn = pytorch_model.create_model(train_X[0].shape, class_weights)
-        # Train the model
-        model = pytorch_model.train_model(model, optimizer, loss_fn, train_X, y_one_hot, epochs = 500)
-
-        # Save the model
-        utils.save_model(model, "pytorch_model", "Saved Models/")
-
-        # Run model to generate predictions to extend the Bach piece (Extend Bach piece)
-        predictions, all_preds = pytorch_model.predict(model, train_X, voice_ranges, seq_length = seq_length, extension_length = 400) # Extension length is number of timesteps to extend the Bach piece by
-
-        # save predictions to a file
-        utils.save_file(predictions, "pytorch_predictions", "Model Outputs/")
-        utils.save_file(all_preds, "pytorch_all_preds", "Model Outputs/")
-
-    elif mode == "predict":
-        # Load model
-        model = torch.load("Saved Models/pytorch_model352_18_7.pt")
-
-        # Run model to generate predictions to extend the Bach piece (Extend Bach piece)
-        predictions, all_preds = pytorch_model.predict(model, train_X, voice_ranges, seq_length = seq_length, extension_length = 400) # Extension length is number of timesteps to extend the Bach piece by
-
-        # save predictions to a file
-        utils.save_file(predictions, "pytorch_predictions", "Model Outputs/")
-        utils.save_file(all_preds, "pytorch_all_preds", "Model Outputs/")
-
-    elif mode == "eval":
-        predictions = np.load("Model Outputs/pytorch_predictions346_17_38.npy")
-        all_preds = np.load("Model Outputs/pytorch_all_preds346_17_38.npy")
-
-    return predictions, all_preds
-
 def main():
-    data = preprocess.load_data(path = "F.txt") # Load the data
-    data = data[0] # we choose only voice 1 
+    window_size = 64
+    ds_voice_1 = dataset.CustomDataset(window_size=window_size) # Added augmentation application into the dataset creation
+    output_to_input_convert = ds_voice_1.get_output_to_input_matching()
 
     """ Preprocess data """
+    X_train, y_train, X_test, y_test = ds_voice_1.get_train_test() 
 
-    train, val, test = preprocess.temporal_data_split(data)
-    # train_X_window, train_Y = preprocess.create_input_windows(train, seq_length = 50)
-
-    voice_ranges = [(50, 80), (40, 70), (35, 65), (25, 55)]
-    voice_range_voice1 = (50, 80)
-    # y_one_hot = preprocess.one_voice_convert_onehot(train_Y, voice_range_voice1)
-
-    augmentated_data = augmentation.augmented_encoding(train)
-
-    circle_of_fifths_representation = augmentation.convert_voices_circle_of_fifths(train)
-    print("Circle of 5ths Representation Example: ", circle_of_fifths_representation[350])
-    chromatic_circle_representation = augmentation.convert_voices_chromatic_circle(train)
-    print("Chromatic circle Representation Example: ", chromatic_circle_representation[350])
-
-    augmentation.plot_circle(circle_of_fifths_representation)
-    augmentation.plot_circle(chromatic_circle_representation)
-
-
-
-    # plot the one hot data
-    # plot.plot_one_hot_labels(y_one_hot, title = "One Hot Labels", xlabel = "Time", ylabel = "Note")
+    X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
+    y_train_tensor = torch.tensor(y_train, dtype=torch.float32)
 
     # class_weights = preprocess.get_class_weights(y_one_hot)
 
 
-    # plot.plot_class_weights(utils.weights_to_tensor(class_weights))
+    """ Train and run model """
+    # Hyperparameters
+    input_size = X_train_tensor[0].numel()
+    output_size = ds_voice_1.get_unique_target_values() # Number of unique notes
+    print("Num Classes: ", output_size)
+    learning_rate = 0.001
 
-    # """ Train and run model """
+    model = lr_model.ActualLogisticRegressionModel(input_size, output_size)
+    criterion = custom_CE.CustomCrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-    # predictions, all_preds = train_and_run_pytorch_model(mode, train_X, y_one_hot, voice_ranges, class_weights, seq_length = 50)
+    print("X Train Shape:", X_train_tensor.shape)
+    flat_X_train_tensor = torch.flatten(X_train_tensor, start_dim=1) # Flatten tensor
+    print("y Train Shape:", y_train_tensor.shape)
 
-    # """ Postprocess data """
+    model = trainer.train_model(flat_X_train_tensor, y_train_tensor, model, optimizer, criterion)
+    
+    preds = predictor.predict_bach(flat_X_train_tensor[-1], model, output_to_input_convert)
 
-    # new_data, new_predictions = utils.add_preds_to_data(train, predictions)
+    """ Postprocess data """
+
+    new_data, new_predictions = utils.add_preds_to_data(ds_voice_1.get_train(), preds)
 
     # plot.plot_certainty(all_preds, title = "Certainty of Predictions", xlabel = "Time", ylabel = "Note")
-    # plot.plot_data(new_data, title = "Original + Predicted Data", xlabel = "Time", ylabel = "Note")
-    # plot.plot_data(new_predictions, title = "Predicted Data", xlabel = "Time", ylabel = "Note")
+    plot.plot_data(new_data, title = "Original + Predicted Data", xlabel = "Time", ylabel = "Note")
+    plot.plot_data(new_predictions, title = "Predicted Data", xlabel = "Time", ylabel = "Note")
 
-    # audio_midi.data_to_audio(new_data, "og + pred")
+    audio_midi.data_to_audio(new_data, "LR full pred")
 
 
     
