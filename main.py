@@ -34,8 +34,10 @@ def main():
     output_size = ds_voice_1.get_unique_target_values() # Number of unique notes
     print("Num Classes: ", output_size)
     learning_rate = 0.001
+    hidden_size = 64
 
     model = lr_model.ActualLogisticRegressionModel(input_size, output_size)
+    # model = ff_model.LogisticRegressionModel(input_size, hidden_size, output_size)
     criterion = custom_CE.CustomCrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 

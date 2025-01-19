@@ -1,4 +1,4 @@
-def train_model(X_train_tensor, y_train_tensor, model, optimizer, criterion, num_epochs=50000):
+def train_model(X_train_tensor, y_train_tensor, model, optimizer, criterion, num_epochs=20000):
   for epoch in range(num_epochs):
       # Forward pass
       outputs = model(X_train_tensor)
