@@ -24,11 +24,11 @@ def plot_data(data, title, xlabel, ylabel):
 
 def plot_certainty(preds, title, xlabel, ylabel):
     timesteps = len(preds)
-    num_voices = preds[0].shape[0]
-    num_classes = preds[0].shape[2]
+    num_voices = preds.shape[1]
+    num_classes = preds.shape[2]
 
     predictions = np.array(preds)
-    predictions = np.squeeze(predictions, axis=2)
+    # predictions = np.squeeze(predictions, axis=2)
 
     for voice_idx in range(num_voices):
         # Create the heatmap for the current voice
