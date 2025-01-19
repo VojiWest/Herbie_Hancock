@@ -45,6 +45,7 @@ def main():
 
     """ Run model to Predict Bach"""
     max_pred, all_preds = predictor.predict_bach(flat_X_train_tensor[-1], model, output_to_input_convert, non_zero_min_note, max_note)
+    print(max_pred, all_preds)
 
     """ Postprocess data """
 

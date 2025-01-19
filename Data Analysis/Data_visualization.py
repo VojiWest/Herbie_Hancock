@@ -143,10 +143,10 @@ def main():
     path = "F.txt"  # File path to the text file
     data = pd.read_csv(path, sep="\t", header=None)  # Load tab-separated values
 
-    # plot_scatter(data, title="Scatter Plot of Notes")
-    # plot_histograms(data, title="Histogram of Notes")
-    # plot_3d(data, title="3D Visualization of Notes")
-    # plot_zero_distribution_per_voice(data, title="Distribution of Silence (0) vs Non-Zero Values")
+    plot_scatter(data, title="Scatter Plot of Notes")
+    plot_histograms(data, title="Histogram of Notes")
+    plot_3d(data, title="3D Visualization of Notes")
+    plot_zero_distribution_per_voice(data, title="Distribution of Silence (0) vs Non-Zero Values")
     plot_correlation_of_voice(data, title="Correlation Matrix of Notes")
     plot_next_note_correlation(data, title="Next Note Correlation Matrix")
 
