@@ -62,7 +62,16 @@ def convert_voices_circle_of_fifths(data):
 def augmented_encoding(data, non_zero_min, max):
 
     encoded_data = []
+    duration = 0
+    previous_note = None
+
     for note in data:
+        if note == previous_note:
+            duration += 1
+
+        else:
+            duration = 0 # Reset duration
+
         if note == 0: 
             chroma_x, chroma_y = 0, 0
             fifths_x, fifths_y = 0, 0
@@ -75,8 +84,10 @@ def augmented_encoding(data, non_zero_min, max):
         normalized_note = (note - non_zero_min) / (max - non_zero_min)
 
         
-        encoded_data.append([normalized_note, chroma_x, chroma_y, fifths_x, fifths_y])
+        encoded_data.append([normalized_note, chroma_x, chroma_y, fifths_x, fifths_y, duration])
+        previous_note = note
 
+    #print("Encoded Data: ", np.array(encoded_data))
     return np.array(encoded_data)
 
 

@@ -24,6 +24,7 @@ def main():
 
     X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
     y_train_tensor = torch.tensor(y_train, dtype=torch.float32)
+    print("x train shape: ", X_train_tensor.shape)
 
     # class_weights = preprocess.get_class_weights(y_one_hot)
 
@@ -31,6 +32,7 @@ def main():
     """ Train model """
     # Hyperparameters
     input_size = X_train_tensor[0].numel()
+    print("Input Size: ", input_size)
     output_size = ds_voice_1.get_unique_target_values() # Number of unique notes
     print("Num Classes: ", output_size)
     learning_rate = 0.001
@@ -42,6 +44,7 @@ def main():
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
     flat_X_train_tensor = torch.flatten(X_train_tensor, start_dim=1) # Flatten tensor
+    print("flatten train x shape: ",flat_X_train_tensor.shape)
 
     model = trainer.train_model(flat_X_train_tensor, y_train_tensor, model, optimizer, criterion)
 
@@ -53,6 +56,7 @@ def main():
     new_data, new_predictions = utils.add_preds_to_data(ds_voice_1.get_train(), max_pred)
 
     plot.plot_certainty(all_preds, title = "Certainty of Predictions", xlabel = "Time", ylabel = "Note") # Plot certainty of each note over timesteps
+    
     plot.plot_data(new_data, title = "Original + Predicted Data", xlabel = "Time", ylabel = "Note") # plot the original + predicted notes
     plot.plot_data(new_predictions, title = "Predicted Data", xlabel = "Time", ylabel = "Note") # plot predicted notes
 

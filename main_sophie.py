@@ -23,7 +23,7 @@ def main(mode):
     X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
     y_train_tensor = torch.tensor(y_train, dtype=torch.float32)
 
-    trainer.train_model(X_train_tensor, y_train_tensor)
+    trainer.train_model(X_train_tensor, y_train_tensor, model, optimizer, criterion, num_epochs=200)
     evaluator.evaluate_model(model, X_test, y_test)
 
 if __name__ == "__main__":

@@ -21,7 +21,7 @@ def predict_bach(last_timestep, model, output_to_input_converter, note_min, note
             aug_X_tensor = torch.tensor(aug_output, dtype=torch.float32)
             aug_X_tensor = torch.flatten(aug_X_tensor)
 
-            last_timestep = torch.cat((last_timestep[5:], aug_X_tensor), 0)
+            last_timestep = torch.cat((last_timestep[6:], aug_X_tensor), 0)
             max_prediction.append(raw_input_domain_output[0])
 
     return np.array(max_prediction), np.array(all_predictions)

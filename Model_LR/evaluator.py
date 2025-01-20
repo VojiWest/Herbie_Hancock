@@ -1,10 +1,11 @@
 import torch
+from Loss import custom_CE
 
 def evaluate_model(model, X_test, y_test):
   X_test_tensor = torch.tensor(X_test, dtype=torch.float32)
   y_test_tensor = torch.tensor(y_test, dtype=torch.float32)
 
-  criterion = CustomCrossEntropyLoss()
+  criterion = custom_CE.CustomCrossEntropyLoss()
 
   # Evaluate the model on the test set
   with torch.no_grad():

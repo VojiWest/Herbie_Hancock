@@ -27,6 +27,7 @@ class CustomDataset(Dataset):
       # drop indices
       train_data = train_data.reset_index(drop=True)
       test_data = test_data.reset_index(drop=True)
+      print("train data size: ", train_data.shape)
       return train_data, test_data
 
     def create_sliding_window_dataset(self, data_raw, data_aug, window_size):
