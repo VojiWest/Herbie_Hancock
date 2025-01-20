@@ -5,7 +5,7 @@ import torch
 import numpy as np
 
 # k is how many top predictions we randomly sample from. This can be tuned
-def predict_bach(last_timestep, model, output_to_input_converter, note_min, note_max, timesteps = 400, k = 5): 
+def predict_bach(last_timestep, model, output_to_input_converter, note_min, note_max, timesteps = 400, k = 3): 
     max_prediction = []
     all_predictions = []
     with torch.no_grad():
