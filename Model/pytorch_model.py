@@ -41,10 +41,10 @@ class GRUModel(nn.Module):
         out3 = self.output3(hidden_out1)
         out4 = self.output4(hidden_out1)
 
-        out1 = F.softmax(out1, dim=1)
-        out2 = F.softmax(out2, dim=1)
-        out3 = F.softmax(out3, dim=1)
-        out4 = F.softmax(out4, dim=1)
+        # out1 = F.softmax(out1, dim=1)
+        # out2 = F.softmax(out2, dim=1)
+        # out3 = F.softmax(out3, dim=1)
+        # out4 = F.softmax(out4, dim=1)
         
         return (out1, out2, out3, out4), hn
 
@@ -116,10 +116,10 @@ def create_model(data_input_shape, class_weights_tensor):
     # optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)  # Start with 1e-3 learning rate
     
     # Use weighted categorical crossentropy loss (for multi-class classification)
-    # loss_fn = weighted_categorical_crossentropy(class_weights_tensor, weighted=False)
+    loss_fn = weighted_categorical_crossentropy(class_weights_tensor, weighted=False)
     
     # Use MSE loss (for regression)
-    loss_fn = multi_output_mse_loss()
+    # loss_fn = multi_output_mse_loss()
 
     # Use Cosine loss (testing)
     # loss_fn = multi_output_cosine_loss()
@@ -143,21 +143,32 @@ def plot_pred_for_each_voice(y_true, y_pred, epoch, fig):
     y_true = np.reshape(y_true, (y_true.shape[1], y_true.shape[0], y_true.shape[2]))
 
     # Get the amount of correct predictions for each voice for each note (TO DO)
-
+    pred_correct = []
+    for voice in range(4):
+        voice_correct = [num for num in range(32)]
+        for timestep in range(y_true.shape[1]):
+            if torch.argmax(y_pred[voice][timestep]) == torch.argmax(y_true[voice][timestep]):
+                voice_correct.append(torch.argmax(y_true[voice][timestep]).item())
+        voice_correct = np.array(voice_correct)
+        pred_correct.append(voice_correct)
 
     fig.clf()
 
     for i in range(4):
         preds = torch.argmax(y_pred[i], dim=1)
         trues = torch.argmax(y_true[i], dim=1)
+        corrs = pred_correct[i]
 
-        one_to_31 = torch.tensor(range(1, 32))
+        # Add 0 to 31 to the end of the tensors for plotting, that way the histogram will have all 32 notes (but we only add 1 for each note so it wont be visible)
+        one_to_31 = torch.tensor(range(0, 32))
         preds = torch.cat((preds, one_to_31), dim=0)
+        trues = torch.cat((trues, one_to_31), dim=0)
 
         # plot histogram of predictions in subplot
         plt.subplot(2, 2, i + 1)
         plt.hist(trues.cpu().numpy(), bins=31, alpha=0.5, label='True', color='g')
-        plt.hist(preds.cpu().numpy(), bins=31, alpha=0.5, label='Predictions', color='r')
+        plt.hist(preds.cpu().numpy(), bins=31, alpha=0.3, label='Predictions', color='r')
+        plt.hist(corrs, bins=31, alpha=0.3, label='Correct', color='b')
         plt.legend(loc='upper right')
         plt.title(f"Voice {i + 1} Predictions -- Epoch {epoch}")
     # plt.draw()

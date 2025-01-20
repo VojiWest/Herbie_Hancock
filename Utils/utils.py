@@ -6,14 +6,31 @@ from sklearn.preprocessing import MinMaxScaler
 import torch
 
 def add_preds_to_data(data, predictions):
-    # Reshape predictions to remove batch dimension
-    predictions_reshaped = predictions
+    """
+    Concatenate predictions to the data as NumPy arrays.
 
-    # Create a DataFrame with the same column names as `train`
-    new_predictions = pd.DataFrame(predictions_reshaped, columns=data.columns)
-    new_data = pd.concat([data, new_predictions], ignore_index=True)
+    Args:
+        data (np.ndarray): Original data (2D NumPy array).
+        predictions (np.ndarray): Predictions (2D NumPy array).
 
-    return new_data, new_predictions
+    Returns:
+        np.ndarray: New data with predictions concatenated.
+        np.ndarray: Predictions reshaped to match the concatenation.
+    """
+    # Ensure predictions are in 2D format for concatenation
+    # if predictions.ndim == 1:
+    #     print("Reshaped Predictions")
+    #     predictions = predictions.reshape(-1, 1)  # Reshape to 2D with one column
+
+    print("Data Shape:", data.shape)
+    print("Predictions Shape:", predictions.shape)
+
+    # Concatenate data and predictions along the column axis (axis=1)
+    new_data = np.hstack((data, predictions))
+
+    print("New Data Shape:", new_data.shape)
+
+    return new_data, predictions
 
 def get_time_signature():
     # get unique label for file using current time
