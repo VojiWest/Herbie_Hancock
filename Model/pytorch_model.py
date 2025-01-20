@@ -206,7 +206,7 @@ def train_model(model, optimizer, loss_fn, train_X, train_y, epochs=100):
             
             # Backward pass and optimize
             optimizer.zero_grad()  # Zero gradients
-            loss.backward()  # Backpropagation
+            loss.backward()  # Backpropagation understand and explain this
             optimizer.step()  # Update model weights
 
         all_outputs = [torch.cat(output_list, dim=0) for output_list in all_outputs]
