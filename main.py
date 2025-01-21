@@ -1,6 +1,5 @@
 from Audio import audio_midi
 from Preprocess import preprocess
-#from Model import keras_model, pytorch_model, logistic_reg
 from Model_LR import ff_model, lr_model, trainer, evaluator, predictor
 from Plots import plot
 from Utils import utils
@@ -41,7 +40,7 @@ def main():
     model = lr_model.ActualLogisticRegressionModel(input_size, output_size)
     # model = ff_model.LogisticRegressionModel(input_size, hidden_size, output_size)
     criterion = custom_CE.CustomCrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
     flat_X_train_tensor = torch.flatten(X_train_tensor, start_dim=1) # Flatten tensor
     print("flatten train x shape: ",flat_X_train_tensor.shape)
