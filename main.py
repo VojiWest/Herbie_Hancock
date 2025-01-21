@@ -1,89 +1,86 @@
 from Audio import audio_midi
 from Preprocess import preprocess
-from Model import keras_model, pytorch_model
+from Model import keras_model, pytorch_model, logistic_reg
+from Model_LR import ff_model, lr_model, trainer, evaluator, predictor
 from Plots import plot
 from Utils import utils
+from Dataset import dataset
+from Loss import custom_CE
+
+
 
 import numpy as np
 import sys
 import torch
 
-def train_and_run_keras_model(mode, train_X, y_one_hot, voice_ranges, class_weights):
-    if mode == "train":
-        model = keras_model.create_model(train_X[0].shape, class_weights)
-        model = keras_model.train_model(model, train_X, y_one_hot, epochs = 100)
+def main():
+    window_size = 64
+    number_of_voices = 0
 
-        predictions, all_preds = keras_model.predict(model, train_X, voice_ranges, seq_length = 50, extension_length = 500)
+    voice_predictions = []
+    voice_num = 0
 
-        # save predictions to a file
-        utils.save_file(predictions, "keras_predictions", "Model Outputs/")
-        utils.save_file(all_preds, "keras_all_preds", "Model Outputs/")
-
-    elif mode == "eval":
-        predictions = np.load("Model Outputs/keras_predictions.npy")
-        all_preds = np.load("Model Outputs/keras_all_preds.npy")
-
-    return predictions, all_preds
-
-def train_and_run_pytorch_model(mode, train_X, y_one_hot, voice_ranges, class_weights):
-    if mode == "train":
-        class_weights = utils.weights_to_tensor(class_weights)
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        train_X = torch.tensor(train_X, dtype=torch.float32).to(device)
-        y_one_hot = torch.tensor(y_one_hot, dtype=torch.float32).to(device)
-
-        model, optimizer, loss_fn = pytorch_model.create_model(train_X[0].shape, class_weights)
-        model = pytorch_model.train_model(model, optimizer, loss_fn, train_X, y_one_hot, epochs = 500)
-
-        predictions, all_preds = pytorch_model.predict(model, train_X, voice_ranges, seq_length = 16, extension_length = 500)
-
-        # save predictions to a file
-        utils.save_file(predictions, "pytorch_predictions", "Model Outputs/")
-        utils.save_file(all_preds, "pytorch_all_preds", "Model Outputs/")
-
-    elif mode == "eval":
-        predictions = np.load("Model Outputs/pytorch_predictions346_17_38.npy")
-        all_preds = np.load("Model Outputs/pytorch_all_preds346_17_38.npy")
-
-    return predictions, all_preds
-
-def main(mode):
-    data = preprocess.load_data(path = "F.txt")
-
-    # plot.plot_data(data, title = "Original Data", xlabel = "Time", ylabel = "Note")
-    # plot.plot_histogram(data, title = "Histogram of Original Data", xlabel = "Note", ylabel = "Count")
-
-    # data_to_audio(data, "original")
+    # for voice_num in range(number_of_voices):
+    ds_voice = dataset.CustomDataset(window_size=window_size, voice_num=voice_num) # Added augmentation application into the dataset creation
+    output_to_input_convert = ds_voice.get_output_to_input_matching()
+    non_zero_min_note, max_note = ds_voice.get_non_zero_min_and_max()
 
     """ Preprocess data """
+    X_train, y_train, X_val, y_val, X_test, y_test = ds_voice.get_train_val_test() 
 
-    train, val, test = preprocess.temporal_data_split(data)
-    train_X, train_Y = preprocess.create_input_windows(train, seq_length = 16)
+    X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
+    y_train_tensor = torch.tensor(y_train, dtype=torch.float32)
 
-    voice_ranges = [(50, 80), (40, 70), (35, 65), (25, 55)]
-    y_one_hot = preprocess.convert_voices_onehot(train_Y, voice_ranges)
+    X_val_tensor = torch.tensor(X_val, dtype=torch.float32)
+    y_val_tensor = torch.tensor(y_val, dtype=torch.float32)
 
-    class_weights = preprocess.get_class_weights(y_one_hot)
+    """ Train model """
+    # Hyperparameters
+    input_size = X_train_tensor[0].numel()
+    output_size = ds_voice.get_unique_target_values() # Number of unique notes
+    print("Num Classes: ", output_size)
+    learning_rate = 0.001
+    hidden_size = 64
 
-    plot.plot_class_weights(utils.weights_to_tensor(class_weights))
+    model = lr_model.ActualLogisticRegressionModel(input_size, output_size)
+    # model = ff_model.LogisticRegressionModel(input_size, hidden_size, output_size)
+    criterion = custom_CE.CustomCrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-    """ Train and run model """
+    flat_X_train_tensor = torch.flatten(X_train_tensor, start_dim=1) # Flatten tensor
+    flat_X_val_tensor = torch.flatten(X_val_tensor, start_dim=1) # Flatten tensor
 
-    # predictions, all_preds = train_and_run_keras_model(mode, train_X, y_one_hot, voice_ranges, class_weights)
-    predictions, all_preds = train_and_run_pytorch_model(mode, train_X, y_one_hot, voice_ranges, class_weights)
+    model = trainer.train_model(flat_X_train_tensor, y_train_tensor, flat_X_val_tensor, y_val_tensor, model, optimizer, criterion)
+
+    """ Run model to Predict Bach"""
+    max_pred, all_preds = predictor.predict_bach(flat_X_train_tensor[-1], model, output_to_input_convert, non_zero_min_note, max_note)
+    print(max_pred)
+
+    voice_predictions.append(max_pred)
+    print("Len voice", voice_num, ":", len(max_pred))
 
     """ Postprocess data """
 
-    new_data, new_predictions = utils.add_preds_to_data(train, predictions)
+    # max_pred = utils.combine_voices(voice_predictions) # If multiple voice use this (it may cause errors tho)
 
-    plot.plot_certainty(all_preds, title = "Certainty of Predictions", xlabel = "Time", ylabel = "Note")
-    plot.plot_data(new_data, title = "Original + Predicted Data", xlabel = "Time", ylabel = "Note")
-    plot.plot_data(new_predictions, title = "Predicted Data", xlabel = "Time", ylabel = "Note")
+    # all_data = ds_voice.get_all_voices_data() # For multiple voices
+    all_data = np.array(ds_voice.get_train()) # For one voice
 
-    audio_midi.data_to_audio(new_data, "og + pred")
+    new_data, new_predictions = utils.add_preds_to_data(all_data, max_pred)
+    new_data = new_data.astype(int)
+
+    print("new data" , new_data)
+
+    plot.plot_certainty(all_preds, title = "Certainty of Predictions", xlabel = "Time", ylabel = "Note") # Plot certainty of each note over timesteps
+    plot.plot_data(all_data, title = "Original Data", xlabel = "Time", ylabel = "Note") # plot original notes
+    plot.plot_data(new_data, title = "Original + Predicted Data", xlabel = "Time", ylabel = "Note") # plot the original + predicted notes
+    plot.plot_data(new_predictions, title = "Predicted Data", xlabel = "Time", ylabel = "Note") # plot predicted notes
+
+    audio_midi.data_to_audio(new_data, "LogReg Voice Zero original + predictions", one_voice=True)
+    audio_midi.data_to_audio(max_pred, "LogReg Voice Zero just predictions", one_voice=True)
 
 
     
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main()

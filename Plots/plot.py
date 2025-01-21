@@ -9,7 +9,7 @@ def plot_histogram(data, title, xlabel, ylabel):
         plt.title(voice_title)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
-        plt.savefig("Plots/" + voice_title + ".png")
+        plt.savefig("Saved Plots/" + voice_title + ".png")
         plt.show()
         plt.close()
 
@@ -19,16 +19,16 @@ def plot_data(data, title, xlabel, ylabel):
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
-    plt.savefig("Plots/" + title + ".png")
+    plt.savefig("Saved Plots/" + title + ".png")
     plt.show()
 
 def plot_certainty(preds, title, xlabel, ylabel):
     timesteps = len(preds)
-    num_voices = preds[0].shape[0]
-    num_classes = preds[0].shape[2]
+    num_voices = preds.shape[1]
+    num_classes = preds.shape[2]
 
     predictions = np.array(preds)
-    predictions = np.squeeze(predictions, axis=2)
+    # predictions = np.squeeze(predictions, axis=2)
 
     for voice_idx in range(num_voices):
         # Create the heatmap for the current voice
@@ -46,7 +46,7 @@ def plot_certainty(preds, title, xlabel, ylabel):
         plt.xticks(ticks=np.arange(num_classes), labels=np.arange(1, num_classes + 1))
 
         # Save the plot
-        plt.savefig(f"Plots/{title}_voice{voice_idx + 1}.png")
+        plt.savefig(f"Saved Plots/{title}_voice{voice_idx + 1}.png")
 
         # Show the plot
         plt.show()
@@ -64,6 +64,27 @@ def plot_class_weights(class_weights):
         plt.title(f"Voice {i + 1} Class Weights")
     plt.savefig("Saved Plots/class_weights.png")
     plt.show()
+
+def plot_one_hot_labels(y_one_hot, title, xlabel, ylabel):
+    # create main figure
+    fig = plt.figure()
+    y_one_hot = np.reshape(y_one_hot, (y_one_hot.shape[1], y_one_hot.shape[0], y_one_hot.shape[2]))
+    
+    # plot class weights for each voice
+    for i in range(4):
+        plt.subplot(2, 2, i + 1)
+        # get the one hot labels for the current voice
+        voice_labels = y_one_hot[i]
+        print(voice_labels.shape)
+        # get argmax of one hot labels
+        voice_labels = np.argmax(voice_labels, axis=1)
+        print("Voice Labels: ", voice_labels[:100])
+        # plot histogram of class weights
+        plt.hist(voice_labels, bins=31)
+        plt.title(f"Voice {i + 1} One Hot Labels")
+    # plt.savefig("Saved Plots/one_hot_labels.png")
+    plt.show()
+
 
 
 

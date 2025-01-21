@@ -3,7 +3,6 @@ import numpy as np
 from sklearn.utils import class_weight
 
 def load_data(path):
-    path = "F.txt"
 
     # Load the data
     data = pd.read_csv(path, sep="\t", header=None)
@@ -46,8 +45,22 @@ def convert_voices_onehot(data, voice_ranges):
 
     y_one_hot = np.array(one_hot_data)
     y_one_hot = y_one_hot.reshape(y_one_hot.shape[1], y_one_hot.shape[0], y_one_hot.shape[2])
-
     return y_one_hot
+
+
+def one_voice_convert_onehot(data, voice_range):
+    one_hot_data = []
+    for note in data:
+        one_hot = np.zeros(31) 
+        if note == 0: 
+            one_hot[0] = 1
+        else:
+            one_hot[note - voice_range[0]] = 1
+        one_hot_data.append(one_hot)
+    
+    return np.array(one_hot_data)
+
+    
 
 def get_class_weights(labels, num_classes=31):
     # Calculate the class weights for each voice
@@ -82,3 +95,12 @@ def get_class_weights(labels, num_classes=31):
         all_class_weights.append(full_class_weights)
     
     return all_class_weights
+
+def get_first_voice(data_X, data_y):
+    # Get the first voice from the data
+    print("Data X Shape: ", data_X.shape, "Data Y Shape: ", data_y.shape)
+    data_X_first_voice = data_X[:, :, 0]
+    data_y_first_voice = data_y[:, 0, :]
+    print("Data X First Voice Shape: ", data_X_first_voice.shape, "Data Y First Voice Shape: ", data_y_first_voice.shape)
+    
+    return data_X_first_voice, data_y_first_voice

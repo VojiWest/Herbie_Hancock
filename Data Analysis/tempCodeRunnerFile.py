@@ -1,0 +1,1 @@
+    plot_next_note_correlation(data, title="Next Note Correlation Matrix")
