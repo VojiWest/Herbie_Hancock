@@ -23,6 +23,7 @@ def get_midi(data, instrument_num=42, durationPerSymbol=1 / 16, one_voice = Fals
         num_voices = 1
 
         cellos = []
+
         n = 0
         start = n * durationPerSymbol
         end = (n + 1) * durationPerSymbol
@@ -78,6 +79,7 @@ def write_midi(cellos, name):
 
     # Add all cellos to the PrettyMIDI object so they are played simultaneously
     for cello in cellos:
+        print("Cello: ", cello)
         pm_obj.instruments.append(cello)
 
     # Write the MIDI file
@@ -89,8 +91,8 @@ def midi_to_wav(name):
     fs = FluidSynth("Soundfonts/Roland_SC-88.sf2")
     fs.midi_to_audio("Data Audio Outputs/"+name+".mid", "Data Audio Outputs/"+name+".wav")
 
-def data_to_audio(data, audio_name, instrument = 42, durationPerSymbol=1 / 16):
-    cellos_midi = get_midi(data, instrument_num=instrument, durationPerSymbol=durationPerSymbol, one_voice=True)
+def data_to_audio(data, audio_name, instrument = 42, durationPerSymbol=1 / 16, one_voice = True):
+    cellos_midi = get_midi(data, instrument_num=instrument, durationPerSymbol=durationPerSymbol, one_voice=one_voice)
     write_midi(cellos_midi, name = audio_name)
     midi_to_wav(name = audio_name)
 
