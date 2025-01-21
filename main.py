@@ -50,10 +50,13 @@ def main():
 
     """ Run model to Predict Bach"""
     max_pred, all_preds = predictor.predict_bach(flat_X_train_tensor[-1], model, output_to_input_convert, non_zero_min_note, max_note)
+    print(max_pred)
 
     """ Postprocess data """
 
     new_data, new_predictions = utils.add_preds_to_data(ds_voice_1.get_train(), max_pred)
+
+    print("new data" , new_data)
 
     plot.plot_certainty(all_preds, title = "Certainty of Predictions", xlabel = "Time", ylabel = "Note") # Plot certainty of each note over timesteps
     

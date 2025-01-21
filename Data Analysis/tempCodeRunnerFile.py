@@ -1,5 +1,1 @@
-
-    plot_zero_distribution_per_voice(data, title="Distribution of Silence (0) vs Non-Zero Values")
-
-if __name__ == "__main__":
-    main()
+    plot_next_note_correlation(data, title="Next Note Correlation Matrix")

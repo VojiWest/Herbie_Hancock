@@ -86,7 +86,8 @@ def write_midi(cellos, name):
 
 def midi_to_wav(name):
     # Convert the MIDI file to a WAV file using FluidSynth
-    fs = FluidSynth("Soundfonts/Roland_SC-88.sf2")
+    # fs = FluidSynth("Soundfonts/Roland_SC-88.sf2")
+    fs = FluidSynth(r"C:\Users\polyx\AppData\Local\Programs\Python\Python310\Lib\site-packages\fluidsynth\fluidsynth.exe")
     fs.midi_to_audio("Data Audio Outputs/"+name+".mid", "Data Audio Outputs/"+name+".wav")
 
 def data_to_audio(data, audio_name, instrument = 42, durationPerSymbol=1 / 16):
