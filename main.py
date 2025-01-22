@@ -1,11 +1,9 @@
 from Audio import audio_midi
-from Model_LR import ff_model, lr_model, trainer, evaluator, predictor
+from Model_LR import lr_model, trainer, evaluator, predictor
 from Plotting import plot
 from Utils import utils
 from Dataset import dataset
 from Loss import custom_CE
-
-
 
 import numpy as np
 import torch
@@ -38,10 +36,8 @@ def main():
     output_size = ds_voice.get_unique_target_values() # Number of unique notes
     print("Num Classes: ", output_size)
     learning_rate = 0.001
-    # hidden_size = 64
 
     model = lr_model.ActualLogisticRegressionModel(input_size, output_size)
-    # model = ff_model.LogisticRegressionModel(input_size, hidden_size, output_size)
     criterion = custom_CE.CustomCrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
