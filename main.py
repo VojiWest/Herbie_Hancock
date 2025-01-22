@@ -1,8 +1,6 @@
 from Audio import audio_midi
-from Preprocess import preprocess
-from Model import keras_model, pytorch_model, logistic_reg
 from Model_LR import ff_model, lr_model, trainer, evaluator, predictor
-from Plots import plot
+from Plotting import plot
 from Utils import utils
 from Dataset import dataset
 from Loss import custom_CE
@@ -10,7 +8,6 @@ from Loss import custom_CE
 
 
 import numpy as np
-import sys
 import torch
 
 def main():
@@ -24,6 +21,7 @@ def main():
     ds_voice = dataset.CustomDataset(window_size=window_size, voice_num=voice_num) # Added augmentation application into the dataset creation
     output_to_input_convert = ds_voice.get_output_to_input_matching()
     non_zero_min_note, max_note = ds_voice.get_non_zero_min_and_max()
+    max_duration = ds_voice.get_max_duration()
 
     """ Preprocess data """
     X_train, y_train, X_val, y_val, X_test, y_test = ds_voice.get_train_val_test() 
@@ -40,7 +38,7 @@ def main():
     output_size = ds_voice.get_unique_target_values() # Number of unique notes
     print("Num Classes: ", output_size)
     learning_rate = 0.001
-    hidden_size = 64
+    # hidden_size = 64
 
     model = lr_model.ActualLogisticRegressionModel(input_size, output_size)
     # model = ff_model.LogisticRegressionModel(input_size, hidden_size, output_size)
@@ -53,8 +51,7 @@ def main():
     model = trainer.train_model(flat_X_train_tensor, y_train_tensor, flat_X_val_tensor, y_val_tensor, model, optimizer, criterion)
 
     """ Run model to Predict Bach"""
-    max_pred, all_preds = predictor.predict_bach(flat_X_train_tensor[-1], model, output_to_input_convert, non_zero_min_note, max_note)
-    print(max_pred)
+    max_pred, all_preds = predictor.predict_bach(flat_X_train_tensor[-1], model, output_to_input_convert, non_zero_min_note, max_note, max_duration)
 
     voice_predictions.append(max_pred)
     print("Len voice", voice_num, ":", len(max_pred))
@@ -69,7 +66,6 @@ def main():
     new_data, new_predictions = utils.add_preds_to_data(all_data, max_pred)
     new_data = new_data.astype(int)
 
-    print("new data" , new_data)
 
     plot.plot_certainty(all_preds, title = "Certainty of Predictions", xlabel = "Time", ylabel = "Note") # Plot certainty of each note over timesteps
     plot.plot_data(all_data, title = "Original Data", xlabel = "Time", ylabel = "Note") # plot original notes

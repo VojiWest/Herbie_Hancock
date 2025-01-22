@@ -13,10 +13,11 @@ class CustomDataset(Dataset):
         self.data = self.data_all[voice_num]
         self.train, self.val, self.test = self.split_temporal_data(self.data, val_ratio=val_ratio, test_ratio=test_ratio)
 
+        self.max_duration = self.get_max_duration()
         self.non_zero_min, self.max = self.get_non_zero_min_and_max()
-        self.train_aug = augmented_encoding(self.train, self.non_zero_min, self.max)
-        self.val_aug = augmented_encoding(self.val, self.non_zero_min, self.max)
-        self.test_aug = augmented_encoding(self.test, self.non_zero_min, self.max)
+        self.train_aug = augmented_encoding(self.train, self.non_zero_min, self.max, self.max_duration)
+        self.val_aug = augmented_encoding(self.val, self.non_zero_min, self.max, self.max_duration)
+        self.test_aug = augmented_encoding(self.test, self.non_zero_min, self.max, self.max_duration)
 
         self.X_train, self.y_train = self.create_sliding_window_dataset(self.train, self.train_aug, window_size)
         self.X_val, self.y_val = self.create_sliding_window_dataset(self.val, self.val_aug, window_size)
@@ -57,7 +58,23 @@ class CustomDataset(Dataset):
       for i, label in enumerate(labels):
               encoded_labels[i, np.where(uniques == label)] = 1  # Now it should be scaled so output classes are starting at 0
       return encoded_labels
+    
+    def get_max_duration(self):
+        max_duration = 1
+        temp_max_duration = 0
+        prev_note = self.train[0]
+        for index in range(1, len(self.train)):
+            note = self.train[index]
+            if note == prev_note:
+                temp_max_duration += 1
+            else:
+                temp_max_duration = 0
 
+            if temp_max_duration > max_duration:
+              max_duration = temp_max_duration
+
+        return max_duration
+       
     def get_train_val_test(self):
       return self.X_train, self.y_train, self.X_val, self.y_val, self.X_test, self.y_test
 

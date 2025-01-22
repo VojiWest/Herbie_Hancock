@@ -1,7 +1,7 @@
 from Preprocess import preprocess
 from Dataset import augmentation
 from Model import keras_model, pytorch_model
-from Plots import plot
+from Plotting import plot
 from Utils import utils
 
 import numpy as np
