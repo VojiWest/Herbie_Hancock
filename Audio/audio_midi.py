@@ -74,27 +74,27 @@ def get_midi(data, instrument_num=42, durationPerSymbol=1 / 16, one_voice = Fals
     return cellos
 
 
-def write_midi(cellos, name):
+def write_midi(cellos, name, folder):
     pm_obj = pm.PrettyMIDI()
 
     # Add all cellos to the PrettyMIDI object so they are played simultaneously
     for cello in cellos:
-        print("Cello: ", cello)
+        # print("Cello: ", cello)
         pm_obj.instruments.append(cello)
 
     # Write the MIDI file
-    pm_obj.write("Data Audio Outputs/"+name+".mid")
+    pm_obj.write(folder+name+".mid")
 
 
-def midi_to_wav(name):
+def midi_to_wav(name, midi_folder, wav_folder):
     # Convert the MIDI file to a WAV file using FluidSynth
     fs = FluidSynth("Soundfonts/Roland_SC-88.sf2")
     # fs = FluidSynth(r"C:\Users\polyx\AppData\Local\Programs\Python\Python310\Lib\site-packages\fluidsynth\fluidsynth.exe")
-    fs.midi_to_audio("Data Audio Outputs/"+name+".mid", "Data Audio Outputs/"+name+".wav")
+    fs.midi_to_audio(midi_folder+name+".mid", wav_folder+name+".wav")
 
-def data_to_audio(data, audio_name, instrument = 42, durationPerSymbol=1 / 16, one_voice = True):
+def data_to_audio(data, audio_name, instrument = 42, durationPerSymbol=1 / 16, one_voice = True, folder = "Data Audio Outputs/"):
     cellos_midi = get_midi(data, instrument_num=instrument, durationPerSymbol=durationPerSymbol, one_voice=one_voice)
-    write_midi(cellos_midi, name = audio_name)
-    midi_to_wav(name = audio_name)
+    write_midi(cellos_midi, name = audio_name, folder = folder + "MIDI/")
+    midi_to_wav(name = audio_name, midi_folder=folder + "MIDI/", wav_folder=folder + "WAV/")
 
     return data

@@ -28,7 +28,6 @@ class CustomDataset(Dataset):
         self.y_test = self.encode_labels(self.y_test)
 
     def split_temporal_data(self, data, val_ratio, test_ratio):
-      print("Splitting train test")
       train_size = int(len(data) * (1-(val_ratio + test_ratio)))  # Get training size
       val_size = int(len(data) * val_ratio)
       test_size = int(len(data) * test_ratio)
@@ -41,7 +40,7 @@ class CustomDataset(Dataset):
       return train_data, val_data, test_data
 
     def create_sliding_window_dataset(self, data_raw, data_aug, window_size):
-      print("Creating sliding window dataset")
+      # print("Creating sliding window dataset")
       X, y = [], []
       for i in range(len(data_raw) - window_size):
           X.append(data_aug[i:i + window_size])
@@ -52,7 +51,7 @@ class CustomDataset(Dataset):
       # one-hot encodes labels
       # restricts the possible note values to the notes that have already occured (no notes outside this range)
       uniques = np.unique(self.train)
-      print("Uniques: ", uniques)
+      # print("Uniques: ", uniques)
       num_unique = len(uniques)
       encoded_labels = np.zeros((len(labels), num_unique))
       for i, label in enumerate(labels):
@@ -76,7 +75,13 @@ class CustomDataset(Dataset):
         return max_duration
        
     def get_train_val_test(self):
-      return self.X_train, self.y_train, self.X_val, self.y_val, self.X_test, self.y_test
+      torch_X_train = torch.tensor(self.X_train, dtype=torch.float32)
+      torch_y_train = torch.tensor(self.y_train, dtype=torch.float32)
+      torch_X_val = torch.tensor(self.X_val, dtype=torch.float32)
+      torch_y_val = torch.tensor(self.y_val, dtype=torch.float32)
+      torch_X_test = torch.tensor(self.X_test, dtype=torch.float32)
+      torch_y_test = torch.tensor(self.y_test, dtype=torch.float32)
+      return torch_X_train, torch_y_train, torch_X_val, torch_y_val, torch_X_test, torch_y_test
 
     def __len__(self):
         return len(self.train), len(self.test)
@@ -92,6 +97,9 @@ class CustomDataset(Dataset):
     
     def get_train(self):
        return self.train
+    
+    def get_val(self):
+       return self.val
     
     def get_all_voices_data(self):
        return self.data_all
