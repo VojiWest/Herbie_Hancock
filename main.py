@@ -38,7 +38,7 @@ def main():
 
         model = lr_model.ActualLogisticRegressionModel(input_size, output_size)
         criterion = custom_CE.CustomCrossEntropyLoss()
-        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+        optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
         flat_X_train_tensor = torch.flatten(X_train_tensor, start_dim=1) # Flatten tensor
         flat_X_val_tensor = torch.flatten(X_val_tensor, start_dim=1) # Flatten tensor
