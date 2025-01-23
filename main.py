@@ -1,6 +1,6 @@
 from Audio import audio_midi
 from Preprocess import preprocess
-from Model_LR import ff_model, lr_model, trainer, evaluator, predictor
+from Model_LR import lr_model, trainer, evaluator, predictor
 from Plots import plot
 from Utils import utils
 from Dataset import dataset
