@@ -17,15 +17,22 @@ def predict_bach(last_timestep, model, output_to_input_converter, note_min, note
             # print("max output: ", output_max)
 
             topk_probs, topk_indices = torch.topk(output, k)
+            # topk_indices = topk_indices.numpy()
             topk_probs = torch.softmax(topk_probs, dim=-1)
+
+            print("probabilities: ", topk_probs)
+            print(" top k indices", topk_indices)
 
             # select an index based on top-n probabilities
             sampled_index = torch.multinomial(topk_probs, num_samples=1).item()
+            print("sampled index", sampled_index)
             chosen_index = topk_indices[0, sampled_index]
+            print("chosen index", chosen_index)
 
             # Output is now from 0-22, but to feed back into data augmentation we need to 
             # convert it back into the MIDI-like format form 0-127
             raw_input_domain_output = [output_to_input_converter[chosen_index]]
+            print("raw in out domain", raw_input_domain_output)
             aug_output = augmented_encoding(raw_input_domain_output, note_min, note_max)
             aug_X_tensor = torch.tensor(aug_output, dtype=torch.float32)
             aug_X_tensor = torch.flatten(aug_X_tensor)

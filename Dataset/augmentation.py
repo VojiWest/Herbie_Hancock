@@ -3,16 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def calculate_circle_of_fifths(note):
-    """
-    Calculate the Circle of Fifths representation for a piano key index.
-    Assumes note is a piano key index (e.g., 1 = A0, 40 = C4).
-
-    Args:
-        note (int): The piano key index (0 for silence).
-
-    Returns:
-        tuple: A 2D coordinate (x, y) representing the note's position on the Circle of Fifths.
-    """
+    
     chromatic_index = (note - 1) % 12
 
     circle_of_fifths_index = (chromatic_index * 7) % 12
@@ -83,7 +74,6 @@ def augmented_encoding(data, non_zero_min, max):
                         
         normalized_note = (note - non_zero_min) / (max - non_zero_min)
 
-        
         encoded_data.append([normalized_note, chroma_x, chroma_y, fifths_x, fifths_y, duration])
         previous_note = note
 
