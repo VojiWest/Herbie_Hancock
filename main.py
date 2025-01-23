@@ -1,68 +1,90 @@
 from Audio import audio_midi
-from Preprocess import preprocess
 from Model_LR import lr_model, trainer, evaluator, predictor
-from Plots import plot
+from Plotting import plot
 from Utils import utils
 from Dataset import dataset
 from Loss import custom_CE
-
-
+from CVGridSearch import cvgridsearch
 
 import numpy as np
-import sys
 import torch
 
 def main():
-    window_size = 64
-    ds_voice_1 = dataset.CustomDataset(window_size=window_size) # Added augmentation application into the dataset creation
-    output_to_input_convert = ds_voice_1.get_output_to_input_matching()
-    non_zero_min_note, max_note = ds_voice_1.get_non_zero_min_and_max()
+    voice_predictions = []
+    voice_num = 0
 
-    """ Preprocess data """
-    X_train, y_train, X_test, y_test = ds_voice_1.get_train_test() 
+    # Do hyperparameter tuning
+    parameter_search_space = { "k" : [3, 6, 11], "window_size" : [16, 32, 64, 128], "learning_rate" : [0.001, 0.01, 0.1]}
+    combinations = utils.get_parameter_combinations(parameter_search_space)
+    
+    for combo in combinations:
+        # Set hyperparameters to evaluate
+        window_size = combo["window_size"]
+        k = combo["k"]
+        learning_rate = combo["learning_rate"]
 
-    X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
-    y_train_tensor = torch.tensor(y_train, dtype=torch.float32)
-    print("x train shape: ", X_train_tensor.shape)
+        # for voice_num in range(number_of_voices):
+        ds_voice = dataset.CustomDataset(window_size=window_size, voice_num=voice_num) # Added augmentation application into the dataset creation
+        output_to_input_convert = ds_voice.get_output_to_input_matching()
+        non_zero_min_note, max_note = ds_voice.get_non_zero_min_and_max()
+        max_duration = ds_voice.get_max_duration()
 
-    # class_weights = preprocess.get_class_weights(y_one_hot)
+        """ Preprocess data """
+        X_train_tensor, y_train_tensor, X_val_tensor, y_val_tensor, X_test_tensor, y_test_tensor = ds_voice.get_train_val_test() 
 
+        """ Train model """
+        input_size = X_train_tensor[0].numel()
+        output_size = ds_voice.get_unique_target_values() # Number of unique notes
 
-    """ Train model """
-    # Hyperparameters
-    input_size = X_train_tensor[0].numel()
-    print("Input Size: ", input_size)
-    output_size = ds_voice_1.get_unique_target_values() # Number of unique notes
-    print("Num Classes: ", output_size)
-    learning_rate = 0.001
-    hidden_size = 64
+        model = lr_model.ActualLogisticRegressionModel(input_size, output_size)
+        criterion = custom_CE.CustomCrossEntropyLoss()
+        optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
-    model = lr_model.ActualLogisticRegressionModel(input_size, output_size)
-    # model = ff_model.LogisticRegressionModel(input_size, hidden_size, output_size)
-    criterion = custom_CE.CustomCrossEntropyLoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+        flat_X_train_tensor = torch.flatten(X_train_tensor, start_dim=1) # Flatten tensor
+        flat_X_val_tensor = torch.flatten(X_val_tensor, start_dim=1) # Flatten tensor
 
-    flat_X_train_tensor = torch.flatten(X_train_tensor, start_dim=1) # Flatten tensor
-    print("flatten train x shape: ",flat_X_train_tensor.shape)
+        model = trainer.train_model(flat_X_train_tensor, y_train_tensor, flat_X_val_tensor, y_val_tensor, model, optimizer, criterion)
 
-    model = trainer.train_model(flat_X_train_tensor, y_train_tensor, model, optimizer, criterion)
+        """ Evaluate model """
+        predictions, _ = predictor.predict_bach(flat_X_train_tensor[-1], model, output_to_input_convert, non_zero_min_note, max_note, max_duration, timesteps=382, k=k)
+
+        val_accuracy = utils.get_accuracy(predictions, ds_voice.get_val())
+        val_mae = utils.get_mae(predictions, ds_voice.get_val())
+
+        """ Postprocess Predictions """
+        all_data = np.array(ds_voice.get_train()) # Get the original training data
+        train_plus_prediction, _ = utils.add_preds_to_data(all_data, predictions)
+
+        title = f" Window Size = {window_size} - Learning Rate = {learning_rate} - K = {k}"
+        audio_midi.data_to_audio(train_plus_prediction, "Full --- " + title, one_voice=True, folder="Grid Search Outputs/")
+        audio_midi.data_to_audio(predictions, "Predictions --- " + title, one_voice=True, folder="Grid Search Outputs/")
+
+        print("Model:  ", title, "  --- Val Acc: ", val_accuracy, "  Val MAE: ", val_mae)
 
     """ Run model to Predict Bach"""
-    max_pred, all_preds = predictor.predict_bach(flat_X_train_tensor[-1], model, output_to_input_convert, non_zero_min_note, max_note)
-    print(max_pred)
+    max_pred, all_preds = predictor.predict_bach(flat_X_train_tensor[-1], model, output_to_input_convert, non_zero_min_note, max_note, max_duration)
+
+    voice_predictions.append(max_pred)
+    print("Len voice", voice_num, ":", len(max_pred))
 
     """ Postprocess data """
 
-    new_data, new_predictions = utils.add_preds_to_data(ds_voice_1.get_train(), max_pred)
+    # max_pred = utils.combine_voices(voice_predictions) # If multiple voice use this (it may cause errors tho)
 
-    print("new data" , new_data)
+    # all_data = ds_voice.get_all_voices_data() # For multiple voices
+    all_data = np.array(ds_voice.get_train()) # For one voice
+
+    new_data, new_predictions = utils.add_preds_to_data(all_data, max_pred)
+    new_data = new_data.astype(int)
+
 
     plot.plot_certainty(all_preds, title = "Certainty of Predictions", xlabel = "Time", ylabel = "Note") # Plot certainty of each note over timesteps
-    
+    plot.plot_data(all_data, title = "Original Data", xlabel = "Time", ylabel = "Note") # plot original notes
     plot.plot_data(new_data, title = "Original + Predicted Data", xlabel = "Time", ylabel = "Note") # plot the original + predicted notes
     plot.plot_data(new_predictions, title = "Predicted Data", xlabel = "Time", ylabel = "Note") # plot predicted notes
 
-    audio_midi.data_to_audio(new_data, "LR full pred")
+    audio_midi.data_to_audio(new_data, "LogReg Voice Zero original + predictions", one_voice=True)
+    audio_midi.data_to_audio(max_pred, "LogReg Voice Zero just predictions", one_voice=True)
 
 
     

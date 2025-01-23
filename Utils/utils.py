@@ -4,6 +4,7 @@ import time
 import tensorflow as tf
 from sklearn.preprocessing import MinMaxScaler
 import torch
+import itertools
 
 def add_preds_to_data(data, predictions):
     """
@@ -18,17 +19,17 @@ def add_preds_to_data(data, predictions):
         np.ndarray: Predictions reshaped to match the concatenation.
     """
     # Ensure predictions are in 2D format for concatenation
-    # if predictions.ndim == 1:
-    #     print("Reshaped Predictions")
-    #     predictions = predictions.reshape(-1, 1)  # Reshape to 2D with one column
+    # if data.ndim == 1:
+    #     print("Reshaped Data")
+        # data = data.reshape(-1, 1)  # Reshape to 2D with one column
 
-    print("Data Shape:", data.shape)
-    print("Predictions Shape:", predictions.shape)
+    # print("Data Shape:", data.shape)
+    # print("Predictions Shape:", predictions.shape)
 
     # Concatenate data and predictions along the column axis (axis=1)
-    new_data = np.hstack((data, predictions))
+    new_data = np.hstack((data, predictions)) # if more than one voice then should be vstack I think, idk
 
-    print("New Data Shape:", new_data.shape)
+    # print("New Data Shape:", new_data.shape)
 
     return new_data, predictions
 
@@ -72,7 +73,7 @@ def normalize_data(data): # Function not qutie working, need to fix
     elif isinstance(data, np.ndarray):
         data = torch.tensor(data)  # Convert NumPy array to PyTorch tensor
     # Reshape to (batch_size * seq_length, num_features)
-    print("Data Shape: ", data.shape)
+    # print("Data Shape: ", data.shape)
     data_flat = data.view(-1, data.shape[-1])  # Using .shape for clarity
 
     # Calculate min and max per feature
@@ -86,3 +87,29 @@ def normalize_data(data): # Function not qutie working, need to fix
     data_scaled = data_scaled_flat.view(data.size())
 
     return data_scaled
+
+def combine_voices(voices):
+    # combine the voices into one array
+    all_voices = list(zip(*voices))
+
+    return np.array(all_voices)
+
+def get_parameter_combinations(parameter_space):
+    keys, values = zip(*parameter_space.items())
+    combinations = [dict(zip(keys, combination)) for combination in itertools.product(*values)]
+
+    return combinations
+
+def get_accuracy(predictions, y_true):
+    y_true = np.array(y_true)
+    correct_predictions = (predictions == y_true).sum()
+    # Calculate the accuracy
+    accuracy = (correct_predictions / len(y_true)) * 100
+
+    return accuracy
+
+def get_mae(predictions, y_true):
+    # Calculate the Mean Absolute Error
+    mae = np.mean(np.abs(predictions - y_true))
+
+    return mae
