@@ -55,7 +55,7 @@ def main():
         all_data = np.array(ds_voice.get_train()) # Get the original training data
         train_plus_prediction, _ = utils.add_preds_to_data(all_data, predictions)
 
-        title = f" Window Size: {window_size} - Learning Rate: {learning_rate} - K: {k}"
+        title = f" Window Size = {window_size} - Learning Rate = {learning_rate} - K = {k}"
         audio_midi.data_to_audio(train_plus_prediction, "Full --- " + title, one_voice=True, folder="Grid Search Outputs/")
         audio_midi.data_to_audio(predictions, "Predictions --- " + title, one_voice=True, folder="Grid Search Outputs/")
 
