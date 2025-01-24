@@ -17,6 +17,7 @@ def main():
     parameter_search_space = { "k" : [3, 6, 11], "window_size" : [16, 32, 64, 128], "learning_rate" : [0.001, 0.01, 0.1]}
     combinations = utils.get_parameter_combinations(parameter_search_space)
     
+    hyperparameter_results = []
     for combo in combinations:
         # Set hyperparameters to evaluate
         window_size = combo["window_size"]
@@ -59,7 +60,10 @@ def main():
         audio_midi.data_to_audio(train_plus_prediction, "Full --- " + title, one_voice=True, folder="Grid Search Outputs/")
         audio_midi.data_to_audio(predictions, "Predictions --- " + title, one_voice=True, folder="Grid Search Outputs/")
 
-        print("Model:  ", title, "  --- Val Acc: ", val_accuracy, "  Val MAE: ", val_mae)
+        # print("Model:  ", title, "  --- Val Acc: ", val_accuracy, "  Val MAE: ", val_mae)
+        hyperparameter_results.append({"Model": title, "Val Acc": val_accuracy, "Val MAE": val_mae})
+
+    print("Hyperparameter Results: ", hyperparameter_results)
 
     """ Run model to Predict Bach"""
     max_pred, all_preds = predictor.predict_bach(flat_X_train_tensor[-1], model, output_to_input_convert, non_zero_min_note, max_note, max_duration)
