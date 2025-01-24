@@ -15,7 +15,7 @@ def main():
 
     # Do hyperparameter tuning
     # parameter_search_space = { "k" : [3, 6, 11], "window_size" : [16, 32, 64, 128], "learning_rate" : [0.001, 0.01, 0.1]}
-    parameter_search_space = { "k" : [1], "window_size" : [16, 32, 64, 128], "learning_rate" : [0.001, 0.01, 0.1]}
+    parameter_search_space = { "k" : [3], "window_size" : [64], "learning_rate" : [0.001, 0.01, 0.1]}
     combinations = utils.get_parameter_combinations(parameter_search_space)
     
     hyperparameter_results = []
