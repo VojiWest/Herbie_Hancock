@@ -43,6 +43,14 @@ def get_midi(data, instrument_num=42, durationPerSymbol=1 / 16, one_voice = Fals
                 ))
                 start = end
                 end += durationPerSymbol
+            if n == symbolicLength - 1:
+                pitch = data[n]
+                cello.notes.append(pm.Note(
+                    velocity=100,
+                    pitch=pitch,
+                    start=start,
+                    end=end
+                ))
         cellos.append(cello)
 
     else:

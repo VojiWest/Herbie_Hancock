@@ -14,7 +14,8 @@ def main():
     voice_num = 0
 
     # Do hyperparameter tuning
-    parameter_search_space = { "k" : [3, 6, 11], "window_size" : [16, 32, 64, 128], "learning_rate" : [0.001, 0.01, 0.1]}
+    # parameter_search_space = { "k" : [3, 6, 11], "window_size" : [16, 32, 64, 128], "learning_rate" : [0.001, 0.01, 0.1]}
+    parameter_search_space = { "k" : [1], "window_size" : [16, 32, 64, 128], "learning_rate" : [0.001, 0.01, 0.1]}
     combinations = utils.get_parameter_combinations(parameter_search_space)
     
     hyperparameter_results = []
@@ -47,7 +48,7 @@ def main():
         model = trainer.train_model(flat_X_train_tensor, y_train_tensor, flat_X_val_tensor, y_val_tensor, model, optimizer, criterion)
 
         """ Evaluate model """
-        predictions, _ = predictor.predict_bach(flat_X_train_tensor[-1], model, output_to_input_convert, non_zero_min_note, max_note, max_duration, timesteps=382, k=k)
+        predictions, all_class_predictions = predictor.predict_bach(flat_X_train_tensor[-1], model, output_to_input_convert, non_zero_min_note, max_note, max_duration, timesteps=382, k=k)
 
         val_accuracy = utils.get_accuracy(predictions, ds_voice.get_val())
         val_mae = utils.get_mae(predictions, ds_voice.get_val())
@@ -60,8 +61,8 @@ def main():
         audio_midi.data_to_audio(train_plus_prediction, "Full --- " + title, one_voice=True, folder="Grid Search Outputs/")
         audio_midi.data_to_audio(predictions, "Predictions --- " + title, one_voice=True, folder="Grid Search Outputs/")
 
-        # print("Model:  ", title, "  --- Val Acc: ", val_accuracy, "  Val MAE: ", val_mae)
         hyperparameter_results.append({"Model": title, "Val Acc": val_accuracy, "Val MAE": val_mae})
+
 
     print("Hyperparameter Results: ", hyperparameter_results)
 
