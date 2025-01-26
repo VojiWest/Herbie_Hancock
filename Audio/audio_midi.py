@@ -100,9 +100,16 @@ def midi_to_wav(name, midi_folder, wav_folder):
     # fs = FluidSynth(r"C:\Users\polyx\AppData\Local\Programs\Python\Python310\Lib\site-packages\fluidsynth\fluidsynth.exe")
     fs.midi_to_audio(midi_folder+name+".mid", wav_folder+name+".wav")
 
-def data_to_audio(data, audio_name, instrument = 42, durationPerSymbol=1 / 16, one_voice = True, folder = "Data Audio Outputs/"):
+def data_to_audio(data, audio_name, instrument = 42, durationPerSymbol=1 / 16, one_voice = True, folder = "Data Audio Outputs/", hyperparameter_tuning = False):
+    if hyperparameter_tuning:
+        midi_folder = folder + "MIDI/"
+        wav_folder = folder + "WAV/"
+    else:
+        midi_folder = folder
+        wav_folder = folder
+    
     cellos_midi = get_midi(data, instrument_num=instrument, durationPerSymbol=durationPerSymbol, one_voice=one_voice)
-    write_midi(cellos_midi, name = audio_name, folder = folder + "MIDI/")
-    midi_to_wav(name = audio_name, midi_folder=folder + "MIDI/", wav_folder=folder + "WAV/")
+    write_midi(cellos_midi, name = audio_name, folder = midi_folder)
+    midi_to_wav(name = audio_name, midi_folder=midi_folder, wav_folder=wav_folder)
 
     return data

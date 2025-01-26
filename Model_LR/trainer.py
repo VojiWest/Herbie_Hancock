@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-def train_model(X_train, y_train, X_val, y_val, model, optimizer, criterion, num_epochs=25000):
+def train_model(X_train, y_train, X_val, y_val, model, optimizer, criterion, num_epochs=25000, plot_losses=True):
     losses = []
     min_val_loss = float('inf')
     for epoch in range(num_epochs):
@@ -13,10 +13,11 @@ def train_model(X_train, y_train, X_val, y_val, model, optimizer, criterion, num
         loss.backward()
         optimizer.step()
 
-        # val_outputs = model(X_val)
-        # val_loss = criterion(val_outputs, y_val)
+        if plot_losses:
+            val_outputs = model(X_val)
+            val_loss = criterion(val_outputs, y_val)
 
-        # losses.append((loss.item(), val_loss.item()))
+            losses.append((loss.item(), val_loss.item()))
 
         if epoch % 500 == 0:
             val_outputs = model(X_val)
@@ -32,11 +33,15 @@ def train_model(X_train, y_train, X_val, y_val, model, optimizer, criterion, num
 
     print("Training finished!")
 
-    # plt.plot(losses)
-    # plt.xlabel('Epoch')
-    # plt.ylabel('Loss')
-    # plt.title('Training Loss')
-    # plt.show()
+    if plot_losses:
+        plt.plot(losses)
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.title('Training Loss')
+        plt.legend(['Train', 'Test'])
+        plt.savefig("Saved Plots/Final_Loss_Plot.png")
+        plt.close()
+        # plt.show()
 
     return model
 
