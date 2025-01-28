@@ -64,7 +64,7 @@ def main():
         audio_midi.data_to_audio(train_plus_prediction, "Full --- " + title, one_voice=True, folder="Grid Search Outputs/")
         audio_midi.data_to_audio(predictions, "Predictions --- " + title, one_voice=True, folder="Grid Search Outputs/")
 
-        print("Model:  ", title, "  --- Val Acc: ", test_accuracy, "  Val MAE: ", test_mae)
+        print("Model:  ", title, "  --- Test Acc: ", test_accuracy, "  Test MAE: ", test_mae)
 
     """ Run model to Predict Bach"""
     max_pred, all_preds = predictor.predict_bach(flat_X_train_tensor[-1], model, output_to_input_convert, non_zero_min_note, max_note, max_duration)
