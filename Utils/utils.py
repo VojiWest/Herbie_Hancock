@@ -4,6 +4,7 @@ import time
 import tensorflow as tf
 from sklearn.preprocessing import MinMaxScaler
 import torch
+import itertools
 
 def add_preds_to_data(data, predictions):
     """
@@ -22,13 +23,13 @@ def add_preds_to_data(data, predictions):
     #     print("Reshaped Data")
         # data = data.reshape(-1, 1)  # Reshape to 2D with one column
 
-    print("Data Shape:", data.shape)
-    print("Predictions Shape:", predictions.shape)
+    # print("Data Shape:", data.shape)
+    # print("Predictions Shape:", predictions.shape)
 
     # Concatenate data and predictions along the column axis (axis=1)
     new_data = np.hstack((data, predictions)) # if more than one voice then should be vstack I think, idk
 
-    print("New Data Shape:", new_data.shape)
+    # print("New Data Shape:", new_data.shape)
 
     return new_data, predictions
 
@@ -92,3 +93,23 @@ def combine_voices(voices):
     all_voices = list(zip(*voices))
 
     return np.array(all_voices)
+
+def get_parameter_combinations(parameter_space):
+    keys, values = zip(*parameter_space.items())
+    combinations = [dict(zip(keys, combination)) for combination in itertools.product(*values)]
+
+    return combinations
+
+def get_accuracy(predictions, y_true):
+    y_true = np.array(y_true)
+    correct_predictions = (predictions == y_true).sum()
+    # Calculate the accuracy
+    accuracy = (correct_predictions / len(y_true)) * 100
+
+    return accuracy
+
+def get_mae(predictions, y_true):
+    # Calculate the Mean Absolute Error
+    mae = np.mean(np.abs(predictions - y_true))
+
+    return mae
