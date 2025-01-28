@@ -49,6 +49,9 @@ def main():
 
     print("Test Accuracy: ", test_accuracy, "Test MAE: ", test_mae)
 
+    plot.plot_histogram(max_pred, title="Predicted Notes Histogram", xlabel="Note", ylabel="Frequency", one_voice=True)
+    plot.plot_histogram(ds_voice.get_test(), title="Test Data Note Frequency", xlabel="Note", ylabel="Frequency", one_voice=True)
+
     # voice_predictions.append(max_pred)
     # print("Len voice", voice_num, ":", len(max_pred))
 

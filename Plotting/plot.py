@@ -1,17 +1,26 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-def plot_histogram(data, title, xlabel, ylabel):
+def plot_histogram(data, title, xlabel, ylabel, one_voice=False):
     # get each column and plot a histogram
-    for i in range(data.shape[1]):
-        voice_title = title + " Voice" + str(i + 1)
-        plt.hist(data.iloc[:, i], bins=max(data.iloc[:, i]))
-        plt.title(voice_title)
+    if one_voice:
+        plt.hist(data, bins=max(data))
+        plt.title(title)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
-        plt.savefig("Saved Plots/" + voice_title + ".png")
+        plt.savefig("Saved Plots/" + title + ".png")
         plt.show()
-        plt.close()
+
+    else:
+        for i in range(data.shape[1]):
+            voice_title = title + " Voice" + str(i + 1)
+            plt.hist(data.iloc[:, i], bins=max(data.iloc[:, i]))
+            plt.title(voice_title)
+            plt.xlabel(xlabel)
+            plt.ylabel(ylabel)
+            plt.savefig("Saved Plots/" + voice_title + ".png")
+            plt.show()
+            plt.close()
 
 def plot_data(data, title, xlabel, ylabel):
     # data is in form of a list with each element being a list of values
