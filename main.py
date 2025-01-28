@@ -9,16 +9,14 @@ import numpy as np
 import torch
 
 def main():
-    voice_predictions = []
     voice_num = 0
     
     # Set hyperparameters to those chosen during hyperparameter tuning
-    window_size = 128
-    k = 1
-    learning_rate = 0.001
+    window_size = 16
+    k = 3
+    learning_rate = 0.01
 
-    # for voice_num in range(number_of_voices):
-    ds_voice = dataset.CustomDataset(window_size=window_size, voice_num=voice_num, val_ratio=0) # Added augmentation application into the dataset creation
+    ds_voice = dataset.CustomDataset(window_size=window_size, voice_num=voice_num, val_ratio=0) # set val_ratio to 0 to use all data for training
     output_to_input_convert = ds_voice.get_output_to_input_matching()
     non_zero_min_note, max_note = ds_voice.get_non_zero_min_and_max()
     max_duration = ds_voice.get_max_duration()
@@ -51,14 +49,8 @@ def main():
     plot.plot_histogram(max_pred, title="Predicted Notes Histogram", xlabel="Note", ylabel="Frequency", one_voice=True)
     plot.plot_histogram(ds_voice.get_test(), title="Test Data Note Frequency", xlabel="Note", ylabel="Frequency", one_voice=True)
 
-    # voice_predictions.append(max_pred)
-    # print("Len voice", voice_num, ":", len(max_pred))
-
     """ Postprocess data """
 
-    # max_pred = utils.combine_voices(voice_predictions) # If multiple voice use this (it may cause errors tho)
-
-    # all_data = ds_voice.get_all_voices_data() # For multiple voices
     all_data = np.array(ds_voice.get_train()) # For one voice
 
     new_data, new_predictions = utils.add_preds_to_data(all_data, max_pred)
@@ -66,12 +58,12 @@ def main():
 
 
     plot.plot_certainty(all_preds, title = "Certainty of Predictions", xlabel = "Time", ylabel = "Note") # Plot certainty of each note over timesteps
-    # plot.plot_data(all_data, title = "Original Data", xlabel = "Time", ylabel = "Note") # plot original notes
-    # plot.plot_data(new_data, title = "Original + Predicted Data", xlabel = "Time", ylabel = "Note") # plot the original + predicted notes
-    # plot.plot_data(new_predictions, title = "Predicted Data", xlabel = "Time", ylabel = "Note") # plot predicted notes
+    plot.plot_data(all_data, title = "Original Data", xlabel = "Time", ylabel = "Note") # plot original notes
+    plot.plot_data(new_data, title = "Original + Predicted Data", xlabel = "Time", ylabel = "Note") # plot the original + predicted notes
+    plot.plot_data(new_predictions, title = "Predicted Data", xlabel = "Time", ylabel = "Note") # plot predicted notes
 
-    audio_midi.data_to_audio(new_data, "test original + predictions", one_voice=True)
-    audio_midi.data_to_audio(max_pred, "test just predictions", one_voice=True)
+    audio_midi.data_to_audio(new_data, "Final LR original + predictions", one_voice=True)
+    audio_midi.data_to_audio(max_pred, "Final LR just predictions", one_voice=True)
 
     
 

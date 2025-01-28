@@ -82,8 +82,7 @@ def augmented_encoding(data, non_zero_min, max_note, max_duration):
             fifths_x, fifths_y = calculate_circle_of_fifths(note)
                         
         normalized_note = (note - non_zero_min) / (max_note - non_zero_min)
-        # normalized_duration = (duration / max_duration)
-        normalized_duration = duration # For testing with normalization off
+        normalized_duration = (duration / max_duration)
         
         encoded_data.append([normalized_note, chroma_x, chroma_y, fifths_x, fifths_y, normalized_duration])
         previous_note = note

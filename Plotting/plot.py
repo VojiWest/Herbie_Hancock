@@ -4,11 +4,12 @@ import numpy as np
 def plot_histogram(data, title, xlabel, ylabel, one_voice=False):
     # get each column and plot a histogram
     if one_voice:
-        plt.hist(data, bins=max(data))
+        plt.xlim(0, max(data) + 1)
+        plt.hist(data, bins=max(data)-min(data))
         plt.title(title)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
-        plt.savefig("Saved Plots/" + title + ".png")
+        plt.savefig("Saved Plots/Final" + title + ".png")
         plt.show()
 
     else:
@@ -18,7 +19,7 @@ def plot_histogram(data, title, xlabel, ylabel, one_voice=False):
             plt.title(voice_title)
             plt.xlabel(xlabel)
             plt.ylabel(ylabel)
-            plt.savefig("Saved Plots/" + voice_title + ".png")
+            plt.savefig("Saved Plots/Final" + voice_title + ".png")
             plt.show()
             plt.close()
 
@@ -44,10 +45,10 @@ def plot_certainty(preds, title, xlabel, ylabel):
         plt.imshow(predictions[:, voice_idx, :], aspect='auto', cmap='viridis', origin='lower')
 
         # Add a colorbar to indicate certainty (probabilities)
-        plt.colorbar(label='Certainty (Probability)')
+        plt.colorbar(label='Probability (Confidence)')
         
         # Set the labels and title
-        plt.title(f"Certainty/Probability Heatmap for Voice {voice_idx + 1}")
+        plt.title(f"Probability Heatmap for Voice {voice_idx + 1}")
         plt.xlabel("Class")
         plt.ylabel("Timestep")
         
@@ -55,7 +56,7 @@ def plot_certainty(preds, title, xlabel, ylabel):
         plt.xticks(ticks=np.arange(num_classes), labels=np.arange(1, num_classes + 1))
 
         # Save the plot
-        # plt.savefig(f"Saved Plots/{title}_voice{voice_idx + 1}.png")
+        plt.savefig(f"Saved Plots/Final/{title}_voice{voice_idx + 1}.png")
 
         # Show the plot
         plt.show()
