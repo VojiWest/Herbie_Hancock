@@ -14,9 +14,11 @@ def main():
     voice_num = 0
 
     # Do hyperparameter tuning
-    parameter_search_space = { "k" : [3, 6, 11], "window_size" : [16, 32, 64, 128], "learning_rate" : [0.001, 0.01, 0.1]}
+    # parameter_search_space = { "k" : [3, 6, 11], "window_size" : [16, 32, 64, 128], "learning_rate" : [0.001, 0.01, 0.1]}
+    parameter_search_space = { "k" : [1, 3], "window_size" : [64, 128], "learning_rate" : [0.001, 0.01, 0.1]}
     combinations = utils.get_parameter_combinations(parameter_search_space)
     
+    hyperparameter_results = []
     for combo in combinations:
         # Set hyperparameters to evaluate
         window_size = combo["window_size"]
@@ -46,7 +48,7 @@ def main():
         model = trainer.train_model(flat_X_train_tensor, y_train_tensor, flat_X_val_tensor, y_val_tensor, model, optimizer, criterion)
 
         """ Evaluate model """
-        predictions, _ = predictor.predict_bach(flat_X_train_tensor[-1], model, output_to_input_convert, non_zero_min_note, max_note, max_duration, timesteps=382, k=k)
+        predictions, all_class_predictions = predictor.predict_bach(flat_X_train_tensor[-1], model, output_to_input_convert, non_zero_min_note, max_note, max_duration, timesteps=382, k=k)
 
         val_accuracy = utils.get_accuracy(predictions, ds_voice.get_val())
         val_mae = utils.get_mae(predictions, ds_voice.get_val())
@@ -55,11 +57,14 @@ def main():
         all_data = np.array(ds_voice.get_train()) # Get the original training data
         train_plus_prediction, _ = utils.add_preds_to_data(all_data, predictions)
 
-        title = f" Window Size = {window_size} - Learning Rate = {learning_rate} - K = {k}"
+        title = f" nND Window Size = {window_size} - Learning Rate = {learning_rate} - K = {k}"
         audio_midi.data_to_audio(train_plus_prediction, "Full --- " + title, one_voice=True, folder="Grid Search Outputs/")
         audio_midi.data_to_audio(predictions, "Predictions --- " + title, one_voice=True, folder="Grid Search Outputs/")
 
-        print("Model:  ", title, "  --- Val Acc: ", val_accuracy, "  Val MAE: ", val_mae)
+        hyperparameter_results.append({"Model": title, "Val Acc": val_accuracy, "Val MAE": val_mae})
+
+
+    print("Hyperparameter Results: ", hyperparameter_results)
 
     """ Run model to Predict Bach"""
     max_pred, all_preds = predictor.predict_bach(flat_X_train_tensor[-1], model, output_to_input_convert, non_zero_min_note, max_note, max_duration)
