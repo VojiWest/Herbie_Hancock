@@ -9,6 +9,6 @@ class ActualLogisticRegressionModel(nn.Module):
         # self.sigmoid = nn.Sigmoid()  # or softmax for multi-class
 
     def forward(self, x):
-        x = torch.sigmoid(self.fc1(x))
-        x = torch.softmax(x, dim=1)
+        #x = torch.sigmoid(self.fc1(x))
+        x = torch.softmax(self.fc1(x), dim=1)
         return x
