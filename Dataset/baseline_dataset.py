@@ -27,9 +27,10 @@ class CustomDataset(Dataset):
     def split_temporal_data(self, data, val_ratio, test_ratio):
       train_size = int(len(data) * (1-(val_ratio + test_ratio)))  # Get training size
       val_size = int(len(data) * val_ratio)
-      test_size = int(len(data) * test_ratio)
+      #test_size = int(len(data) * test_ratio)
+      test_size = len(data) - train_size - val_size
       print("Train Size:", train_size, " - Val Size:", val_size, " - Test Size: ", test_size)
-      train_data, val_data, test_data = data[:train_size], data[train_size:(train_size + val_size)], data[test_size:]
+      train_data, val_data, test_data = data[:train_size], data[train_size:(train_size + val_size)], data[(train_size + val_size):]
       # drop indices
       train_data = train_data.reset_index(drop=True)
       val_data = val_data.reset_index(drop=True)
@@ -97,6 +98,9 @@ class CustomDataset(Dataset):
     
     def get_val(self):
        return self.val
+    
+    def get_test(self):
+       return self.test
     
     def get_all_voices_data(self):
        return self.data_all

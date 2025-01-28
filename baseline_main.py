@@ -15,7 +15,7 @@ def main():
 
     # Do hyperparameter tuning
     #parameter_search_space = { "k" : [3, 6, 11], "window_size" : [16, 32, 64, 128], "learning_rate" : [0.001, 0.01, 0.1]}
-    parameter_search_space = { "k" : [3], "window_size" : [16], "learning_rate" : [0.001]}
+    parameter_search_space = { "k" : [1], "window_size" : [128], "learning_rate" : [0.1]}
     combinations = utils.get_parameter_combinations(parameter_search_space)
     
     for combo in combinations:
@@ -25,7 +25,7 @@ def main():
         learning_rate = combo["learning_rate"]
 
         # for voice_num in range(number_of_voices):
-        ds_voice = baseline_dataset.CustomDataset(window_size=window_size, voice_num=voice_num) # Added augmentation application into the dataset creation
+        ds_voice = baseline_dataset.CustomDataset(window_size=window_size, voice_num=voice_num, val_ratio=0) # Added augmentation application into the dataset creation
         output_to_input_convert = ds_voice.get_output_to_input_matching()
         non_zero_min_note, max_note = ds_voice.get_non_zero_min_and_max()
         max_duration = ds_voice.get_max_duration()
@@ -44,17 +44,17 @@ def main():
         optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
         flat_X_train_tensor = torch.flatten(X_train_tensor, start_dim=1) # Flatten tensor
-        flat_X_val_tensor = torch.flatten(X_val_tensor, start_dim=1) # Flatten tensor
+        flat_X_test_tensor = torch.flatten(X_test_tensor, start_dim=1) # Flatten tensor
         print("flat_X_train_tensor", flat_X_train_tensor.shape)
-        print("flat x val shape",flat_X_val_tensor.shape)
+        print("flat x val shape",flat_X_test_tensor.shape)
 
-        model = trainer.train_model(flat_X_train_tensor, y_train_tensor, flat_X_val_tensor, y_val_tensor, model, optimizer, criterion)
+        model = trainer.train_model(flat_X_train_tensor, y_train_tensor, flat_X_test_tensor, y_test_tensor, model, optimizer, criterion)
 
         """ Evaluate model """
-        predictions, _ = predictor.predict_bach(flat_X_train_tensor[-1], model, output_to_input_convert, non_zero_min_note, max_note, max_duration, timesteps=382, k=k)
+        predictions, _ = predictor.predict_bach(flat_X_train_tensor[-1], model, output_to_input_convert, non_zero_min_note, max_note, max_duration, timesteps=383, k=k)
 
-        val_accuracy = utils.get_accuracy(predictions, ds_voice.get_val())
-        val_mae = utils.get_mae(predictions, ds_voice.get_val())
+        test_accuracy = utils.get_accuracy(predictions, ds_voice.get_test())
+        test_mae = utils.get_mae(predictions, ds_voice.get_test())
 
         """ Postprocess Predictions """
         all_data = np.array(ds_voice.get_train()) # Get the original training data
@@ -64,7 +64,7 @@ def main():
         audio_midi.data_to_audio(train_plus_prediction, "Full --- " + title, one_voice=True, folder="Grid Search Outputs/")
         audio_midi.data_to_audio(predictions, "Predictions --- " + title, one_voice=True, folder="Grid Search Outputs/")
 
-        print("Model:  ", title, "  --- Val Acc: ", val_accuracy, "  Val MAE: ", val_mae)
+        print("Model:  ", title, "  --- Val Acc: ", test_accuracy, "  Val MAE: ", test_mae)
 
     """ Run model to Predict Bach"""
     max_pred, all_preds = predictor.predict_bach(flat_X_train_tensor[-1], model, output_to_input_convert, non_zero_min_note, max_note, max_duration)

@@ -1,24 +1,14 @@
 import matplotlib.pyplot as plt
 
-<<<<<<< HEAD
 def train_model(X_train, y_train, X_val, y_val, model, optimizer, criterion, num_epochs=10000):
-  losses = []
-  min_val_loss = float('inf')
-  for epoch in range(num_epochs):
-      # Forward pass
-      outputs = model(X_train)
-      loss = criterion(outputs, y_train)
-=======
-def train_model(X_train, y_train, X_val, y_val, model, optimizer, criterion, num_epochs=25000):
     losses = []
     min_val_loss = float('inf')
     for epoch in range(num_epochs):
-        # Forward pass
+      # Forward pass
         outputs = model(X_train)
         loss = criterion(outputs, y_train)
->>>>>>> Vojo-LinReg
 
-        # Backward and optimize
+            # Backward and optimize
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
