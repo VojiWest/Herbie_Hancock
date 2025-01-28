@@ -55,7 +55,7 @@ def plot_certainty(preds, title, xlabel, ylabel):
         plt.xticks(ticks=np.arange(num_classes), labels=np.arange(1, num_classes + 1))
 
         # Save the plot
-        plt.savefig(f"Saved Plots/{title}_voice{voice_idx + 1}.png")
+        # plt.savefig(f"Saved Plots/{title}_voice{voice_idx + 1}.png")
 
         # Show the plot
         plt.show()

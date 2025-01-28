@@ -27,7 +27,7 @@ def train_model(X_train, y_train, X_val, y_val, model, optimizer, criterion, num
 
             if val_loss < min_val_loss:
                 min_val_loss = val_loss
-            if val_loss > 1.05 * min_val_loss:
+            if val_loss > 1.1 * min_val_loss:
                 print("Early stopping!")
                 break
 

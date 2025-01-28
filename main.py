@@ -4,7 +4,6 @@ from Plotting import plot
 from Utils import utils
 from Dataset import dataset
 from Loss import custom_CE
-from CVGridSearch import cvgridsearch
 
 import numpy as np
 import torch
@@ -16,7 +15,7 @@ def main():
     # Set hyperparameters to those chosen during hyperparameter tuning
     window_size = 128
     k = 1
-    learning_rate = 0.1
+    learning_rate = 0.001
 
     # for voice_num in range(number_of_voices):
     ds_voice = dataset.CustomDataset(window_size=window_size, voice_num=voice_num, val_ratio=0) # Added augmentation application into the dataset creation
@@ -67,12 +66,12 @@ def main():
 
 
     plot.plot_certainty(all_preds, title = "Certainty of Predictions", xlabel = "Time", ylabel = "Note") # Plot certainty of each note over timesteps
-    plot.plot_data(all_data, title = "Original Data", xlabel = "Time", ylabel = "Note") # plot original notes
-    plot.plot_data(new_data, title = "Original + Predicted Data", xlabel = "Time", ylabel = "Note") # plot the original + predicted notes
-    plot.plot_data(new_predictions, title = "Predicted Data", xlabel = "Time", ylabel = "Note") # plot predicted notes
+    # plot.plot_data(all_data, title = "Original Data", xlabel = "Time", ylabel = "Note") # plot original notes
+    # plot.plot_data(new_data, title = "Original + Predicted Data", xlabel = "Time", ylabel = "Note") # plot the original + predicted notes
+    # plot.plot_data(new_predictions, title = "Predicted Data", xlabel = "Time", ylabel = "Note") # plot predicted notes
 
-    audio_midi.data_to_audio(new_data, "FINAL original + predictions", one_voice=True)
-    audio_midi.data_to_audio(max_pred, "FINAL just predictions", one_voice=True)
+    audio_midi.data_to_audio(new_data, "test original + predictions", one_voice=True)
+    audio_midi.data_to_audio(max_pred, "test just predictions", one_voice=True)
 
     
 

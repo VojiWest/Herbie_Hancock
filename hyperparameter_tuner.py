@@ -4,7 +4,6 @@ from Plotting import plot
 from Utils import utils
 from Dataset import dataset
 from Loss import custom_CE
-from CVGridSearch import cvgridsearch
 
 import numpy as np
 import torch
@@ -14,12 +13,13 @@ def hyperparameter_tuner():
     voice_num = 0
 
     # Do hyperparameter tuning
-    # parameter_search_space = { "k" : [3, 6, 11], "window_size" : [16, 32, 64, 128], "learning_rate" : [0.001, 0.01, 0.1]}
-    parameter_search_space = { "k" : [1, 3], "window_size" : [64, 128], "learning_rate" : [0.001, 0.01, 0.1]}
+    parameter_search_space = { "k" : [1, 3, 6, 11], "window_size" : [16, 32, 64, 128], "learning_rate" : [0.001, 0.01, 0.1]}
     combinations = utils.get_parameter_combinations(parameter_search_space)
     
     hyperparameter_results = []
-    for combo in combinations:
+    for num, combo in enumerate(combinations):
+        print(f"Hyperparameter Combination {num+1}/{len(combinations)}")
+
         # Set hyperparameters to evaluate
         window_size = combo["window_size"]
         k = combo["k"]
@@ -58,8 +58,8 @@ def hyperparameter_tuner():
         train_plus_prediction, _ = utils.add_preds_to_data(all_data, predictions)
 
         title = f" nND Window Size = {window_size} - Learning Rate = {learning_rate} - K = {k}"
-        audio_midi.data_to_audio(train_plus_prediction, "Full --- " + title, one_voice=True, folder="Grid Search Outputs/", hyperparameter_tuning=True)
-        audio_midi.data_to_audio(predictions, "Predictions --- " + title, one_voice=True, folder="Grid Search Outputs/", hyperparameter_tuning=True)
+        audio_midi.data_to_audio(train_plus_prediction, "Full --- " + title, one_voice=True, folder="Grid Search Outputs II/", hyperparameter_tuning=True)
+        audio_midi.data_to_audio(predictions, "Predictions --- " + title, one_voice=True, folder="Grid Search Outputs II/", hyperparameter_tuning=True)
 
         hyperparameter_results.append({"Model": title, "Val Acc": val_accuracy, "Val MAE": val_mae})
 
