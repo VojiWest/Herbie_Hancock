@@ -46,8 +46,8 @@ def main():
 
     print("Test Accuracy: ", test_accuracy, "Test MAE: ", test_mae)
 
-    plot.plot_histogram(max_pred, title="Predicted Notes Histogram", xlabel="Note", ylabel="Frequency", one_voice=True)
-    plot.plot_histogram(ds_voice.get_test(), title="Test Data Note Frequency", xlabel="Note", ylabel="Frequency", one_voice=True)
+    plot.plot_histogram(max_pred, title="Baseline Predicted Notes Histogram", xlabel="Note", ylabel="Frequency", one_voice=True)
+    plot.plot_histogram(ds_voice.get_test(), title="Baseline Test Data Note Frequency", xlabel="Note", ylabel="Frequency", one_voice=True)
 
     """ Postprocess data """
 
@@ -63,7 +63,7 @@ def main():
     plot.plot_data(new_predictions, title = "Baseline Predicted Data", xlabel = "Time", ylabel = "Note") # plot predicted notes
 
     audio_midi.data_to_audio(new_data, "Baseline Final LR original + predictions", one_voice=True)
-    audio_midi.data_to_audio(max_pred, "Baselin Final LR just predictions", one_voice=True)
+    audio_midi.data_to_audio(max_pred, "Baseline Final LR just predictions", one_voice=True)
 
     
 
